@@ -230,10 +230,7 @@ function auth_login($user, $pass, $sticky = false, $silent = false) {
             return true;
         } else {
             //invalid credentials - log off
-            if(!$silent) {
-                http_status(403, 'Login failed');
-                msg($lang['badlogin'], -1);
-            }
+            if(!$silent) msg($lang['badlogin'], -1);
             auth_logoff();
             return false;
         }
@@ -928,6 +925,8 @@ function updateprofile() {
     $changes['pass'] = $INPUT->post->str('newpass');
     $changes['name'] = $INPUT->post->str('fullname');
     $changes['mail'] = $INPUT->post->str('email');
+    $changes['gmail'] = $INPUT->post->str('gmail');
+    $changes['hypothesis'] = $INPUT->post->str('hypothesis');
 
     // check misspelled passwords
     if($changes['pass'] != $INPUT->post->str('passchk')) {

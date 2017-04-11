@@ -101,9 +101,9 @@ class auth_plugin_authplain extends DokuWiki_Auth_Plugin {
      * @param array  $grps list of groups the user is in
      * @return string
      */
-    protected function _createUserLine($user, $pass, $name, $mail, $grps) {
+    protected function _createUserLine($user, $pass, $name, $mail, $gmail, $hypothesis, $grps ) {
         $groups   = join(',', $grps);
-        $userline = array($user, $pass, $name, $mail, $groups);
+        $userline = array($user, $pass, $name, $mail, $groups, $gmail, $hypothesis);
         $userline = str_replace('\\', '\\\\', $userline); // escape \ as \\
         $userline = str_replace(':', '\\:', $userline); // escape : as \:
         $userline = join(':', $userline)."\n";
@@ -129,7 +129,7 @@ class auth_plugin_authplain extends DokuWiki_Auth_Plugin {
      * @param array  $grps
      * @return bool|null|string
      */
-    public function createUser($user, $pwd, $name, $mail, $grps = null) {
+    public function createUser($user, $pwd, $name, $mail, $gmail, $hypothesis, $grps = null ) {
         global $conf;
         global $config_cascade;
 
@@ -145,14 +145,14 @@ class auth_plugin_authplain extends DokuWiki_Auth_Plugin {
         if(!is_array($grps)) $grps = array($conf['defaultgroup']);
 
         // prepare user line
-        $userline = $this->_createUserLine($user, $pass, $name, $mail, $grps);
+        $userline = $this->_createUserLine($user, $pass, $name, $mail, $gmail, $hypothesis, $grps );
 
         if(!io_saveFile($config_cascade['plainauth.users']['default'], $userline, true)) {
             msg($this->getLang('writefail'), -1);
             return null;
         }
 
-        $this->users[$user] = compact('pass', 'name', 'mail', 'grps');
+        $this->users[$user] = compact('pass', 'name', 'mail', 'grps', 'gmail', 'hypothesis');
         return $pwd;
     }
 
@@ -193,7 +193,7 @@ class auth_plugin_authplain extends DokuWiki_Auth_Plugin {
             $userinfo[$field] = $value;
         }
 
-        $userline = $this->_createUserLine($newuser, $userinfo['pass'], $userinfo['name'], $userinfo['mail'], $userinfo['grps']);
+        $userline = $this->_createUserLine($newuser, $userinfo['pass'], $userinfo['name'], $userinfo['mail'], $userinfo['gmail'], $userinfo['hypothesis'], $userinfo['grps']  );
 
         if(!io_replaceInFile($config_cascade['plainauth.users']['default'], '/^'.$user.':/', $userline, true)) {
             msg('There was an error modifying your user data. You may need to register again.', -1);
@@ -375,6 +375,12 @@ class auth_plugin_authplain extends DokuWiki_Auth_Plugin {
             $users[$row[0]]['pass'] = $row[1];
             $users[$row[0]]['name'] = urldecode($row[2]);
             $users[$row[0]]['mail'] = $row[3];
+
+			if ( count($row) > 5 ) {
+				$users[$row[0]]['gmail'] = $row[5];
+				$users[$row[0]]['hypothesis'] = $row[6];								
+			}
+
             $users[$row[0]]['grps'] = $groups;
         }
         return $users;
@@ -384,7 +390,7 @@ class auth_plugin_authplain extends DokuWiki_Auth_Plugin {
         // due to a bug in PCRE 6.6, preg_split will fail with the regex we use here
         // refer github issues 877 & 885
         if ($this->_pregsplit_safe){
-            return preg_split('/(?<![^\\\\]\\\\)\:/', $line, 5);       // allow for : escaped as \:
+            return preg_split('/(?<![^\\\\]\\\\)\:/', $line, 7);       // allow for : escaped as \:
         }
 
         $row = array();

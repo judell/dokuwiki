@@ -1711,6 +1711,9 @@ function html_register(){
     $base_attrs = array('size'=>50,'required'=>'required');
     $email_attrs = $base_attrs + array('type'=>'email','class'=>'edit');
 
+    $extra_attrs_required = array('size'=>30, 'required'=>'required');
+    $extra_attrs_optional = array('size'=>30, 'required'=>'optional');
+
     print p_locale_xhtml('register');
     print '<div class="centeralign">'.NL;
     $form = new Doku_Form(array('id' => 'dw__register'));
@@ -1724,6 +1727,11 @@ function html_register(){
     }
     $form->addElement(form_makeTextField('fullname', $INPUT->post->str('fullname'), $lang['fullname'], '', 'block', $base_attrs));
     $form->addElement(form_makeField('email','email', $INPUT->post->str('email'), $lang['email'], '', 'block', $email_attrs));
+
+
+    $form->addElement(form_makeField('text','gmail', $INPUT->post->str('gmail'), 'google username', '', 'block', $extra_attrs_required));
+    $form->addElement(form_makeField('text','hypothesis', $INPUT->post->str('hypothesis'), 'hypothesis username', '', 'block', $extra_attrs_required));
+
     $form->addElement(form_makeButton('submit', '', $lang['btn_register']));
     $form->endFieldset();
     html_form('register', $form);
@@ -1750,6 +1758,10 @@ function html_updateprofile(){
 
     $fullname = $INPUT->post->str('fullname', $INFO['userinfo']['name'], true);
     $email = $INPUT->post->str('email', $INFO['userinfo']['mail'], true);
+
+    $gmail = $INFO['userinfo']['gmail'];
+    $hypothesis = $INFO['userinfo']['hypothesis'];
+
     $form = new Doku_Form(array('id' => 'dw__register'));
     $form->startFieldset($lang['profile']);
     $form->addHidden('do', 'profile');
@@ -1761,6 +1773,15 @@ function html_updateprofile(){
     $attr = array('size'=>'50', 'class'=>'edit');
     if (!$auth->canDo('modMail')) $attr['disabled'] = 'disabled';
     $form->addElement(form_makeField('email','email', $email, $lang['email'], '', 'block', $attr));
+
+    $extra_attrs_required = array('size'=>30, 'required'=>'required');
+    $extra_attrs_optional = array('size'=>30, 'required'=>'optional');
+
+    $form->addElement(form_makeField('text','gmail', $gmail, 'google username', '', 'block', $extra_attrs_required));
+
+    $form->addElement(form_makeField('text','hypothesis', $hypothesis, 'hypothesis username', '', 'block', $extra_attrs_required));
+
+
     $form->addElement(form_makeTag('br'));
     if ($auth->canDo('modPass')) {
         $form->addElement(form_makePasswordField('newpass', $lang['newpass'], '', 'block', array('size'=>'50')));
